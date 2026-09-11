@@ -8,6 +8,8 @@ type Funcionario = { id: string; nome: string; regiao: string; cargo: string }
 type Cliente = { id: string; nome: string }
 type Cnpj = { id: string; cnpj: string }
 
+const OPCOES_ACAO = ['CRM', 'MERCHANDISING', 'TRADE CAMPANHA', 'E-COMMERCE', 'EVENTOS']
+
 function proximosMeses(qtd = 6) {
   const hoje = new Date()
   return Array.from({ length: qtd }, (_, i) => {
@@ -50,11 +52,16 @@ export default function NovaSipForm({ funcionario, tiposCliente }: { funcionario
 
   const meses = proximosMeses()
   const total = mesesSelecionados.reduce((acc, m) => acc + (Number(mesesDados[m]?.valor) || 0), 0)
+  const cnpjsAtivos = cnpjs.filter((c) => !cnpjsRemovidos.has(c.id))
+  const opcoesAcaoDisponiveis = OPCOES_ACAO.filter((op) => op !== 'TRADE CAMPANHA' || tipoCliente === 'DISTY')
 
   async function onTipoChange(tipo: string) {
     setTipoCliente(tipo)
     setClienteId('')
     setCnpjs([])
+    if (acao === 'TRADE CAMPANHA' && tipo !== 'DISTY') {
+      setAcao('')
+    }
     const { data } = await supabase
       .from('clientes')
       .select('id, nome')
@@ -93,7 +100,7 @@ export default function NovaSipForm({ funcionario, tiposCliente }: { funcionario
   function validar(): string | null {
     if (!clienteId) return 'Selecione um cliente.'
     if (cnpjsAtivos.length === 0) return 'Ao menos um CNPJ precisa participar.'
-    if (!acao.trim()) return 'Informe a ação a ser feita no cliente.'
+    if (!acao) return 'Selecione a ação a ser feita no cliente.'
     if (mesesSelecionados.length === 0) return 'Selecione ao menos um mês.'
     for (const m of mesesSelecionados) {
       if (!mesesDados[m]?.valor || !mesesDados[m]?.descricao) return 'Preencha valor e descrição de todos os meses selecionados.'
@@ -104,8 +111,6 @@ export default function NovaSipForm({ funcionario, tiposCliente }: { funcionario
     if (!respNome || !respEmail || !testNome || !testEmail) return 'Preencha os dados dos dois assinantes.'
     return null
   }
-
-  const cnpjsAtivos = cnpjs.filter((c) => !cnpjsRemovidos.has(c.id))
 
   function abrirConfirmacao() {
     const msg = validar()
@@ -254,12 +259,16 @@ export default function NovaSipForm({ funcionario, tiposCliente }: { funcionario
 
         <div className="mb-4">
           <label className="mb-1 block text-sm font-medium">Ação a ser feita no cliente</label>
-          <input
+          <select
             value={acao}
             onChange={(e) => setAcao(e.target.value)}
-            placeholder="Ex: Ponta de gôndola + tabloide"
             className="w-full rounded-lg border px-3 py-2 text-sm"
-          />
+          >
+            <option value="">Selecione...</option>
+            {opcoesAcaoDisponiveis.map((op) => (
+              <option key={op} value={op}>{op}</option>
+            ))}
+          </select>
         </div>
 
         <div className="mb-4">
