@@ -1,5 +1,5 @@
 "use client";
-// Itens 1 e 2 — Admin altera status com comentário; bloqueado se cancelada ou recusada.
+// Itens 1 e 2 — Trade altera status com comentário; travado em Cancelada/Reprovada
 import { useState, useTransition } from "react";
 import { alterarStatusSip } from "@/app/actions/sip";
 import { SIP_STATUS, STATUS_LABEL, statusEditavel, normalizarStatus, type SipStatus } from "@/lib/sip/status";
@@ -8,28 +8,28 @@ export function AlterarStatusForm({ sipId, statusAtual: bruto }: { sipId: string
   const statusAtual = normalizarStatus(bruto);
   const [status, setStatus] = useState<SipStatus>(statusAtual);
   const [comentario, setComentario] = useState("");
-  const [msg, setMsg] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; texto: string } | null>(null);
   const [pending, start] = useTransition();
 
   if (!statusEditavel(statusAtual)) {
     return (
       <div className="rounded-xl border border-border bg-zinc-50 p-4 text-sm text-muted">
-        🔒 Esta SIP foi <strong>{STATUS_LABEL[statusAtual].toLowerCase()}</strong> e não permite alteração de status.
+        🔒 Esta SIP está <strong>{STATUS_LABEL[statusAtual]?.toLowerCase()}</strong> e não permite alteração de status.
       </div>
     );
   }
 
-  const confirmar = () => {
-    if (!statusEditavel(status) && !confirm(`Marcar como "${STATUS_LABEL[status]}" é definitivo. Deseja continuar?`)) return;
+  const salvar = () => {
+    if (!statusEditavel(status) && !confirm(`Marcar como "${STATUS_LABEL[status]}" é definitivo. Continuar?`)) return;
     start(async () => {
       const r = await alterarStatusSip(sipId, status, comentario);
-      setMsg(r.ok ? { tipo: "ok", texto: "Status atualizado." } : { tipo: "erro", texto: r.erro! });
+      setMsg(r.ok ? { ok: true, texto: "Status atualizado." } : { ok: false, texto: r.erro! });
       if (r.ok) setComentario("");
     });
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
       <label className="block text-sm font-medium">
         Novo status
         <select
@@ -55,16 +55,14 @@ export function AlterarStatusForm({ sipId, statusAtual: bruto }: { sipId: string
       </label>
 
       <button
-        onClick={confirmar}
+        onClick={salvar}
         disabled={pending || (status === statusAtual && !comentario.trim())}
         className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
       >
         {pending ? "Salvando..." : "Salvar alteração"}
       </button>
 
-      {msg && (
-        <p className={`text-sm ${msg.tipo === "ok" ? "text-emerald-700" : "text-rose-700"}`}>{msg.texto}</p>
-      )}
+      {msg && <p className={`text-sm ${msg.ok ? "text-emerald-700" : "text-rose-700"}`}>{msg.texto}</p>}
     </div>
   );
 }

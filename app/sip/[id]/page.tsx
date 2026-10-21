@@ -1,33 +1,30 @@
-// Itens 1, 2, 3 e 4 — Detalhe ÚNICO da SIP (Admin, REP e Gestores)
-//  - Admin (time trade): vê o form de alterar status + comentário
-//  - Solicitante (REP): vê a área de envio de comprovação
-//  - Gestor da região: só visualiza (com o nome de quem solicitou)
+// Itens 1, 2, 3 e 4 — Detalhe ÚNICO da SIP
+//  - Trade (admin): form de status + comentário
+//  - Solicitante (REP): envio de comprovação
+//  - Gestor da região: visualiza (com o nome de quem solicitou)
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient, getFuncionarioLogado } from "@/lib/supabase/sipServer";
-import { SipCard, type SipResumo } from "@/app/components/sip/SipCard";
+import { SipCard } from "@/app/components/sip/SipCard";
 import { HistoricoStatus } from "@/app/components/sip/HistoricoStatus";
 import { EnviarComprovante } from "@/app/components/sip/EnviarComprovante";
 import { AlterarStatusForm } from "@/app/components/sip/AlterarStatusForm";
+import { SIP_SELECT, mapearSip } from "@/lib/sip/mapear";
 
 export default async function SipDetalhe({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const eu = await getFuncionarioLogado();
 
-  const { data: sip } = await supabase
-    .from("sips")
-    .select("*, solicitante:funcionarios!sips_solicitante_id_fkey(id, nome, cargo, regiao)")
-    .eq("id", id)
-    .single();
-
-  if (!sip) notFound(); // RLS: quem não pode ver cai aqui
+  const { data: sip } = await supabase.from("sips").select(SIP_SELECT).eq("id", id).single();
+  if (!sip) notFound(); // quem não tem permissão cai aqui
 
   const [{ data: historico }, { data: comprovantes }] = await Promise.all([
     supabase.from("sip_status_historico").select("*").eq("sip_id", id).order("created_at", { ascending: false }),
     supabase.from("sip_comprovantes").select("*").eq("sip_id", id).order("created_at", { ascending: false }),
   ]);
 
+  const resumo = mapearSip(sip);
   const souAdmin = eu?.time?.toLowerCase() === "trade";
   const souSolicitante = sip.solicitante_id === eu?.id;
   const modo = souAdmin ? "admin" : souSolicitante ? "rep" : "gestor";
@@ -35,11 +32,9 @@ export default async function SipDetalhe({ params }: { params: Promise<{ id: str
   return (
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[1fr_380px]">
       <div className="space-y-6">
-        <Link href={souAdmin ? "/admin" : "/minhas-sips"} className="text-sm text-muted hover:text-brand">
-          ← Voltar
-        </Link>
+        <Link href={souAdmin ? "/admin" : "/minhas-sips"} className="text-sm text-muted hover:text-brand">← Voltar</Link>
 
-        <SipCard sip={sip as SipResumo} modo={modo} />
+        <SipCard sip={resumo} modo={modo} />
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold">Histórico e comentários</h2>
@@ -70,9 +65,7 @@ export default async function SipDetalhe({ params }: { params: Promise<{ id: str
             <AlterarStatusForm sipId={sip.id} statusAtual={sip.status} />
           </section>
         )}
-        {souSolicitante && (
-          <EnviarComprovante sipId={sip.id} tipoAcao={sip.tipo_acao} status={sip.status} />
-        )}
+        {souSolicitante && <EnviarComprovante sipId={sip.id} tipoAcao={resumo.tipo_acao} status={sip.status} />}
       </aside>
     </main>
   );

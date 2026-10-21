@@ -1,12 +1,11 @@
-/* Item 6 — Design tokens (Tailwind v4, padrão do create-next-app).
-   Substitua os HEX abaixo pelos do manual de marca Germed. */
+/* Item 6 — Identidade visual (Tailwind v4). Troque os HEX pelos do manual Germed. */
 @import "tailwindcss";
 
 @theme {
-  --color-brand:        #003a8c;  /* primária (azul institucional) */
+  --color-brand:        #003a8c;
   --color-brand-dark:   #002a66;
-  --color-brand-accent: #00a3e0;  /* secundária / destaque */
-  --color-brand-soft:   #eef4ff;  /* fundos suaves de destaque */
+  --color-brand-accent: #00a3e0;
+  --color-brand-soft:   #eef4ff;
 
   --color-background:   #f6f8fb;
   --color-card:         #ffffff;
@@ -15,17 +14,14 @@
   --color-border:       #e2e8f0;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --radius-2xl: 1rem;
 }
 
 html, body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
 }
 
-/* Cabeçalho padrão do app */
 .app-header {
   background: linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-accent) 100%);
   color: #fff;

@@ -1,24 +1,15 @@
 "use client";
-// Item 4 — Espaço de envio da comprovação com instrução por tipo de ação
+// Item 4 — Envio da comprovação com instrução por tipo de ação
 import { useRef, useState, useTransition } from "react";
 import { enviarComprovante } from "@/app/actions/sip";
 import { instrucaoPorTipo } from "@/lib/sip/comprovacao";
-import { aceitaComprovante, normalizarStatus, type SipStatus } from "@/lib/sip/status";
+import { aceitaComprovante, normalizarStatus } from "@/lib/sip/status";
 
-export function EnviarComprovante({
-  sipId,
-  tipoAcao,
-  status,
-}: {
-  sipId: string;
-  tipoAcao: string;
-  status: string;
-}) {
+export function EnviarComprovante({ sipId, tipoAcao, status }: { sipId: string; tipoAcao: string; status: string }) {
   const instrucao = instrucaoPorTipo(tipoAcao);
   const formRef = useRef<HTMLFormElement>(null);
   const [msg, setMsg] = useState<{ ok: boolean; texto: string } | null>(null);
   const [pending, start] = useTransition();
-
   const liberado = aceitaComprovante(normalizarStatus(status));
 
   return (
@@ -34,9 +25,7 @@ export function EnviarComprovante({
       </div>
 
       {!liberado ? (
-        <p className="mt-4 text-sm text-muted">
-          O envio fica disponível quando a SIP estiver aprovada ou com comprovante pendente.
-        </p>
+        <p className="mt-4 text-sm text-muted">O envio fica disponível quando a SIP estiver aprovada ou com comprovação pendente.</p>
       ) : (
         <form
           ref={formRef}
@@ -53,15 +42,8 @@ export function EnviarComprovante({
           <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border px-4 py-8 text-center transition hover:border-brand hover:bg-brand-soft">
             <span className="text-2xl">📎</span>
             <span className="mt-1 text-sm font-medium">Clique para selecionar os arquivos</span>
-            <span className="text-xs text-muted">Imagens, PDF, PPT ou e-mail (.msg/.eml)</span>
-            <input
-              type="file"
-              name="arquivos"
-              multiple
-              accept="image/*,.pdf,.ppt,.pptx,.msg,.eml,.xlsx"
-              className="sr-only"
-              required
-            />
+            <span className="text-xs text-muted">Imagens, PDF, PPT, Excel ou e-mail (.msg/.eml)</span>
+            <input type="file" name="arquivos" multiple required accept="image/*,.pdf,.ppt,.pptx,.msg,.eml,.xlsx" className="sr-only" />
           </label>
           <textarea
             name="observacao"
@@ -69,10 +51,7 @@ export function EnviarComprovante({
             placeholder="Observação (opcional)"
             className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
-          <button
-            disabled={pending}
-            className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
-          >
+          <button disabled={pending} className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
             {pending ? "Enviando..." : "Enviar comprovação"}
           </button>
           {msg && <p className={`text-sm ${msg.ok ? "text-emerald-700" : "text-rose-700"}`}>{msg.texto}</p>}

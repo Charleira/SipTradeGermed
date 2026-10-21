@@ -1,19 +1,15 @@
 "use server";
-
 import { createClient } from "@/lib/supabase/sipServer";
 import { revalidatePath } from "next/cache";
-import type { SipStatus } from "@/lib/sip/status";
 
-/** Itens 1 e 2 — altera status + grava comentário (trava de cancelada/recusada no banco) */
-export async function alterarStatusSip(sipId: string, status: SipStatus, comentario?: string) {
+/** Itens 1 e 2 — altera status + grava comentário (trava no banco) */
+export async function alterarStatusSip(sipId: string, status: string, comentario?: string) {
   const supabase = await createClient();
-
   const { error } = await supabase.rpc("alterar_status_sip", {
     p_sip_id: sipId,
     p_status: status,
     p_comentario: comentario ?? null,
   });
-
   if (error) return { ok: false, erro: error.message };
 
   revalidatePath("/admin");
@@ -23,17 +19,14 @@ export async function alterarStatusSip(sipId: string, status: SipStatus, comenta
   return { ok: true };
 }
 
-/** Item 4 — upload do comprovante para o Storage + registro na tabela */
+/** Item 4 — upload do comprovante (Storage) + registro */
 export async function enviarComprovante(formData: FormData) {
   const supabase = await createClient();
-
   const sipId = String(formData.get("sipId"));
   const observacao = String(formData.get("observacao") ?? "");
   const arquivos = formData.getAll("arquivos") as File[];
 
-  if (!arquivos.length || !arquivos[0].size) {
-    return { ok: false, erro: "Selecione ao menos um arquivo." };
-  }
+  if (!arquivos.length || !arquivos[0].size) return { ok: false, erro: "Selecione ao menos um arquivo." };
 
   const { data: eu } = await supabase.rpc("meu_funcionario_id");
 

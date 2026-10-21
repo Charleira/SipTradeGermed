@@ -1,6 +1,7 @@
 // Item 7 — GD, GR, GN e DIRETOR veem as SIPs da sua região (abaixo do seu cargo)
 import { createClient, getFuncionarioLogado } from "@/lib/supabase/sipServer";
-import { SipCard, type SipResumo } from "@/app/components/sip/SipCard";
+import { SipCard } from "@/app/components/sip/SipCard";
+import { SIP_SELECT, mapearSip } from "@/lib/sip/mapear";
 
 export default async function SipsDaEquipe() {
   const supabase = await createClient();
@@ -9,8 +10,8 @@ export default async function SipsDaEquipe() {
   // A regra do banco (pode_ver_sip) já filtra cargo + região
   const { data: sips } = await supabase
     .from("sips")
-    .select("*, solicitante:funcionarios!sips_solicitante_id_fkey(nome, cargo, regiao)")
-    .neq("solicitante_id", eu?.id ?? "")
+    .select(SIP_SELECT)
+    .neq("solicitante_id", eu?.id ?? "00000000-0000-0000-0000-000000000000")
     .order("created_at", { ascending: false });
 
   return (
@@ -22,12 +23,10 @@ export default async function SipsDaEquipe() {
 
       {sips?.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sips.map((s) => <SipCard key={s.id} sip={s as SipResumo} modo="gestor" />)}
+          {sips.map((s) => <SipCard key={s.id} sip={mapearSip(s)} modo="gestor" />)}
         </div>
       ) : (
-        <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
-          Nenhuma SIP da equipe por enquanto.
-        </p>
+        <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">Nenhuma SIP da equipe por enquanto.</p>
       )}
     </main>
   );

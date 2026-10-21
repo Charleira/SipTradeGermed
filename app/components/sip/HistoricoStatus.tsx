@@ -1,12 +1,10 @@
-// Item 2 — Linha do tempo com os comentários do admin (visível ao REP)
+// Item 2 — Linha do tempo com os comentários do Trade (visível ao REP)
 import { SipStatusBadge } from "./SipStatusBadge";
-import type { SipStatus } from "@/lib/sip/status";
 
 export type HistoricoItem = {
   id: number;
-  status_novo: SipStatus;
+  status_novo: string;
   comentario: string | null;
-  alterado_por: string | null;
   created_at: string;
 };
 
@@ -24,11 +22,7 @@ export function HistoricoStatus({ itens }: { itens: HistoricoItem[] }) {
               {new Date(h.created_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
             </time>
           </div>
-          {h.comentario && (
-            <p className="mt-2 rounded-lg bg-brand-soft px-3 py-2 text-sm text-foreground">
-              💬 {h.comentario}
-            </p>
-          )}
+          {h.comentario && <p className="mt-2 rounded-lg bg-brand-soft px-3 py-2 text-sm">💬 {h.comentario}</p>}
         </li>
       ))}
     </ol>
