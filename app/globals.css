@@ -1,19 +1,103 @@
-/* Item 6 — Identidade visual (Tailwind v4). Troque os HEX pelos do manual Germed. */
+/* Item 6 — Identidade visual Germed (manual de marca)
+   Verde Escuro #004b5a · Verde Claro #82be41 · Azul #77aac5
+   Lilás #b181ab · Laranja #efa241 · Branco #ffffff
+   Fonte: Isotonic (10 arquivos .ttf em public/fonts) */
 @import "tailwindcss";
 
+/* ---------- Fonte Isotonic (public/fonts/*.ttf) ---------- */
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-Lt.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-LtIt.ttf") format("truetype");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-Rg.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-RgIt.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-Md.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-MdIt.ttf") format("truetype");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-SmBd.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-SmBdIt.ttf") format("truetype");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-Bd.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Isotonic";
+  src: url("/fonts/Isotonic-BdIt.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 @theme {
-  --color-brand:        #003a8c;
-  --color-brand-dark:   #002a66;
-  --color-brand-accent: #00a3e0;
-  --color-brand-soft:   #eef4ff;
+  /* Paleta oficial Germed */
+  --color-verde-escuro: #004b5a;
+  --color-verde-claro:  #82be41;
+  --color-azul:         #77aac5;
+  --color-lilas:        #b181ab;
+  --color-laranja:      #efa241;
 
-  --color-background:   #f6f8fb;
+  /* Tokens usados pelos componentes */
+  --color-brand:        #004b5a;   /* verde escuro: títulos, botões, links */
+  --color-brand-dark:   #00353f;   /* hover dos botões */
+  --color-brand-accent: #82be41;   /* verde claro: destaques e faixas */
+  --color-brand-soft:   #eef6e6;   /* fundo suave verde claro */
+
+  --color-background:   #f7f9f8;
   --color-card:         #ffffff;
-  --color-foreground:   #0f172a;
-  --color-muted:        #64748b;
-  --color-border:       #e2e8f0;
+  --color-foreground:   #00323c;
+  --color-muted:        #5f7a80;
+  --color-border:       #dde7e3;
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Isotonic primeiro; Exo 2 (Google) como reserva se o arquivo faltar */
+  --font-sans: "Isotonic", var(--font-exo), ui-sans-serif, system-ui, sans-serif;
 }
 
 html, body {
@@ -22,7 +106,11 @@ html, body {
   font-family: var(--font-sans);
 }
 
+h1, h2, h3 { color: var(--color-brand); letter-spacing: -0.01em; }
+
+/* Cabeçalho igual ao banner: fundo branco + faixa verde claro no topo */
 .app-header {
-  background: linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-accent) 100%);
-  color: #fff;
+  background: #ffffff;
+  border-top: 4px solid var(--color-verde-claro);
+  border-bottom: 1px solid var(--color-border);
 }
