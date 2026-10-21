@@ -29,16 +29,17 @@ export const STATUS_LABEL: Record<SipStatus, string> = {
   cancelada: "Cancelada",
 };
 
+// Cores da paleta Germed (bg-azul, bg-lilas... vêm do globals.css)
 export const STATUS_STYLE: Record<SipStatus, string> = {
-  aberta: "bg-blue-50 text-blue-700 ring-blue-200",
-  em_andamento: "bg-purple-50 text-purple-700 ring-purple-200",
-  falta_assinatura: "bg-yellow-50 text-yellow-800 ring-yellow-200",
-  aprovada: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  falta_comprovante: "bg-orange-50 text-orange-700 ring-orange-200",
-  comprovacao_atrasada: "bg-orange-100 text-orange-800 ring-orange-300",
-  parcela_aprovada: "bg-teal-50 text-teal-700 ring-teal-200",
+  aberta: "bg-azul/15 text-[#2f6a88] ring-azul/50",
+  em_andamento: "bg-lilas/15 text-[#7d4f78] ring-lilas/50",
+  falta_assinatura: "bg-laranja/15 text-[#a5650f] ring-laranja/50",
+  aprovada: "bg-verde-claro/20 text-[#3f6e12] ring-verde-claro/60",
+  falta_comprovante: "bg-laranja/15 text-[#a5650f] ring-laranja/50",
+  comprovacao_atrasada: "bg-laranja/30 text-[#8a520a] ring-laranja",
+  parcela_aprovada: "bg-azul/15 text-[#2f6a88] ring-azul/50",
   parcela_recusada: "bg-rose-50 text-rose-700 ring-rose-200",
-  parcela_paga: "bg-green-100 text-green-800 ring-green-300",
+  parcela_paga: "bg-verde-escuro text-white ring-verde-escuro",
   reprovada: "bg-red-100 text-red-800 ring-red-200",
   cancelada: "bg-zinc-100 text-zinc-500 ring-zinc-200",
 };
