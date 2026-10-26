@@ -17,8 +17,10 @@ export const ordenarParcelas = (acoes: any[] = []) =>
 
 /** Procura o tipo de ação em qualquer coluna com "tipo" no nome */
 export function acharTipoAcao(sip: any): string {
+  // Coluna real no banco: sips.acao (ex.: "CRM"). Mantém "tipo..." como reserva.
+  if (typeof sip?.acao === "string" && sip.acao.trim()) return sip.acao.trim();
   const busca = (o: any) =>
-    o && Object.entries(o).find(([k, v]) => /tipo/i.test(k) && typeof v === "string" && v.trim())?.[1];
+    o && Object.entries(o).find(([k, v]) => /tipo|^acao$/i.test(k) && typeof v === "string" && v.trim())?.[1];
   const acoes = sip.sip_acoes_mes ?? [];
   return (busca(sip) as string) ?? (acoes.map(busca).find(Boolean) as string) ?? "—";
 }
