@@ -25,10 +25,12 @@ export default async function SipDetalhe({ params }: { params: Promise<{ id: str
   const { data: sip } = await supabase.from("sips").select(SIP_SELECT_COMPLETO).eq("id", id).single();
   if (!sip) notFound(); // quem não tem permissão cai aqui
 
-  const [{ data: histSip }, { data: histParc }, { data: comps }] = await Promise.all([
+  const [{ data: histSip }, { data: histParc }, { data: comps }, { data: relacionados }] = await Promise.all([
     supabase.from("sip_status_historico").select("*").eq("sip_id", id),
     supabase.from("sip_parcela_historico").select("*").eq("sip_id", id),
     supabase.from("sip_comprovantes").select("*").eq("sip_id", id).order("created_at", { ascending: false }),
+    // CNPJs, responsáveis e demais tabelas ligadas à SIP/cliente (SQL 007)
+    supabase.rpc("sip_dados_relacionados", { p_sip_id: id }),
   ]);
 
   // Os links "Ver" e "Baixar" são gerados na hora por /api/comprovantes/[id]
@@ -64,7 +66,7 @@ export default async function SipDetalhe({ params }: { params: Promise<{ id: str
       <div className="space-y-6">
         <Link href={souAdmin ? "/admin" : "/minhas-sips"} className="text-sm text-muted hover:text-brand">← Voltar</Link>
 
-        <SipCard sip={resumo} modo={modo} detalhes={<DetalhesSip sip={sip} />} />
+        <SipCard sip={resumo} modo={modo} detalhes={<DetalhesSip sip={sip} relacionados={relacionados} />} />
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
