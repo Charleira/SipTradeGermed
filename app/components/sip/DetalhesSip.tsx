@@ -36,6 +36,7 @@ const ROTULOS: Record<string, string> = {
   email: "E-mail",
   telefone: "Telefone",
   tipo_acao: "Tipo de ação",
+  acao: "Tipo de ação",
 };
 const rotulo = (k: string) =>
   ROTULOS[k] ?? k.replace(/_id$/, "").replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
