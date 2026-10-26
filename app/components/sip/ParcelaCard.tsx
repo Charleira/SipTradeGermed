@@ -4,6 +4,7 @@
 import { SipStatusBadge } from "./SipStatusBadge";
 import { AlterarStatusForm } from "./AlterarStatusForm";
 import { EnviarComprovante } from "./EnviarComprovante";
+import { ListaComprovantes, type Comprovante } from "./ListaComprovantes";
 import { PARCELA_STATUS, parcelaAceitaComprovante, sipAceitaComprovante, statusEditavel } from "@/lib/sip/status";
 import { mesCurto } from "@/lib/sip/mapear";
 
@@ -23,7 +24,7 @@ export function ParcelaCard({
   numero: number;
   sipId: string;
   sipStatus: string;
-  comprovantes: { id: number; arquivo_nome: string; url: string | null; created_at: string; observacao?: string | null }[];
+  comprovantes: Comprovante[];
   ultimoComentario?: string | null;
   souAdmin: boolean;
   souSolicitante: boolean;
@@ -54,26 +55,8 @@ export function ParcelaCard({
       )}
 
       <div className="mt-3">
-        <p className="mb-1 text-xs font-medium text-muted">Comprovantes</p>
-        {comprovantes.length ? (
-          <ul className="divide-y divide-border rounded-lg border border-border text-sm">
-            {comprovantes.map((c) => (
-              <li key={c.id} className="flex items-center justify-between gap-3 px-3 py-2">
-                <span className="truncate" title={c.observacao ?? ""}>{c.arquivo_nome}</span>
-                <span className="flex shrink-0 items-center gap-3 text-xs text-muted">
-                  {new Date(c.created_at).toLocaleDateString("pt-BR")}
-                  {c.url && (
-                    <a href={c.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">
-                      Abrir
-                    </a>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted">Nenhum comprovante enviado.</p>
-        )}
+        <p className="mb-1 text-xs font-medium text-muted">Comprovantes ({comprovantes.length})</p>
+        <ListaComprovantes itens={comprovantes} />
       </div>
 
       {souSolicitante && (

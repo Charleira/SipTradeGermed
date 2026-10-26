@@ -13,6 +13,7 @@ import { ParcelaCard } from "@/app/components/sip/ParcelaCard";
 import { HistoricoStatus, type HistoricoItem } from "@/app/components/sip/HistoricoStatus";
 import { AlterarStatusForm } from "@/app/components/sip/AlterarStatusForm";
 import { InstrucaoComprovacao } from "@/app/components/sip/InstrucaoComprovacao";
+import { ListaComprovantes } from "@/app/components/sip/ListaComprovantes";
 import { SIP_SELECT_COMPLETO, mapearSip, ordenarParcelas, mesCurto } from "@/lib/sip/mapear";
 import { SIP_STATUS, STATUS_LABEL, normalizarStatus, statusEditavel } from "@/lib/sip/status";
 
@@ -30,13 +31,8 @@ export default async function SipDetalhe({ params }: { params: Promise<{ id: str
     supabase.from("sip_comprovantes").select("*").eq("sip_id", id).order("created_at", { ascending: false }),
   ]);
 
-  // Links temporários (1h) para abrir os comprovantes
-  const comprovantes = await Promise.all(
-    (comps ?? []).map(async (c: any) => ({
-      ...c,
-      url: (await supabase.storage.from("comprovantes").createSignedUrl(c.arquivo_path, 3600)).data?.signedUrl ?? null,
-    }))
-  );
+  // Os links "Ver" e "Baixar" são gerados na hora por /api/comprovantes/[id]
+  const comprovantes = comps ?? [];
 
   const parcelas = ordenarParcelas(sip.sip_acoes_mes);
   const nomeParcela = (pid: string) => {
@@ -99,14 +95,7 @@ export default async function SipDetalhe({ params }: { params: Promise<{ id: str
           {comprovantes.some((c: any) => !c.parcela_id) && (
             <div className="mt-4 text-sm">
               <p className="mb-1 text-xs font-medium text-muted">Comprovantes gerais (sem parcela)</p>
-              <ul className="divide-y divide-border rounded-lg border border-border">
-                {comprovantes.filter((c: any) => !c.parcela_id).map((c: any) => (
-                  <li key={c.id} className="flex justify-between gap-3 px-3 py-2">
-                    <span className="truncate">{c.arquivo_nome}</span>
-                    {c.url && <a href={c.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand hover:underline">Abrir</a>}
-                  </li>
-                ))}
-              </ul>
+              <ListaComprovantes itens={comprovantes.filter((c: any) => !c.parcela_id)} />
             </div>
           )}
         </section>
