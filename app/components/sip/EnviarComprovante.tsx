@@ -1,62 +1,55 @@
 "use client";
-// Item 4 — Envio da comprovação com instrução por tipo de ação
+// Upload de comprovante de UMA parcela
 import { useRef, useState, useTransition } from "react";
 import { enviarComprovante } from "@/app/actions/sip";
-import { instrucaoPorTipo } from "@/lib/sip/comprovacao";
-import { aceitaComprovante, normalizarStatus } from "@/lib/sip/status";
 
-export function EnviarComprovante({ sipId, tipoAcao, status }: { sipId: string; tipoAcao: string; status: string }) {
-  const instrucao = instrucaoPorTipo(tipoAcao);
+export function EnviarComprovante({
+  sipId,
+  parcelaId,
+  liberado,
+  motivo,
+}: {
+  sipId: string;
+  parcelaId: string;
+  liberado: boolean;
+  motivo?: string;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const [msg, setMsg] = useState<{ ok: boolean; texto: string } | null>(null);
   const [pending, start] = useTransition();
-  const liberado = aceitaComprovante(normalizarStatus(status));
+
+  if (!liberado) return motivo ? <p className="text-xs text-muted">{motivo}</p> : null;
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <h2 className="text-lg font-semibold">Enviar comprovação</h2>
-
-      <div className="mt-3 rounded-xl border-l-4 border-brand bg-brand-soft p-4">
-        <p className="text-sm font-semibold text-brand">{instrucao.titulo}</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
-          {instrucao.exige.map((e) => <li key={e}>{e}</li>)}
-        </ul>
-        {instrucao.dica && <p className="mt-2 text-xs text-muted">💡 {instrucao.dica}</p>}
+    <form
+      ref={formRef}
+      action={(fd) =>
+        start(async () => {
+          const r = await enviarComprovante(fd);
+          setMsg({ ok: r.ok, texto: r.ok ? "Comprovante enviado!" : r.erro! });
+          if (r.ok) formRef.current?.reset();
+        })
+      }
+      className="space-y-2"
+    >
+      <input type="hidden" name="sipId" value={sipId} />
+      <input type="hidden" name="parcelaId" value={parcelaId} />
+      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border px-4 py-4 text-sm transition hover:border-brand hover:bg-brand-soft">
+        <span>📎</span>
+        <span className="font-medium">Selecionar arquivos desta parcela</span>
+        <input type="file" name="arquivos" multiple required accept="image/*,.pdf,.ppt,.pptx,.msg,.eml,.xlsx" className="sr-only" />
+      </label>
+      <div className="flex gap-2">
+        <input
+          name="observacao"
+          placeholder="Observação (opcional)"
+          className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+        />
+        <button disabled={pending} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
+          {pending ? "Enviando..." : "Enviar"}
+        </button>
       </div>
-
-      {!liberado ? (
-        <p className="mt-4 text-sm text-muted">O envio fica disponível quando a SIP estiver aprovada ou com comprovação pendente.</p>
-      ) : (
-        <form
-          ref={formRef}
-          action={(fd) =>
-            start(async () => {
-              const r = await enviarComprovante(fd);
-              setMsg({ ok: r.ok, texto: r.ok ? "Comprovante enviado com sucesso!" : r.erro! });
-              if (r.ok) formRef.current?.reset();
-            })
-          }
-          className="mt-4 space-y-3"
-        >
-          <input type="hidden" name="sipId" value={sipId} />
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border px-4 py-8 text-center transition hover:border-brand hover:bg-brand-soft">
-            <span className="text-2xl">📎</span>
-            <span className="mt-1 text-sm font-medium">Clique para selecionar os arquivos</span>
-            <span className="text-xs text-muted">Imagens, PDF, PPT, Excel ou e-mail (.msg/.eml)</span>
-            <input type="file" name="arquivos" multiple required accept="image/*,.pdf,.ppt,.pptx,.msg,.eml,.xlsx" className="sr-only" />
-          </label>
-          <textarea
-            name="observacao"
-            rows={2}
-            placeholder="Observação (opcional)"
-            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          <button disabled={pending} className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
-            {pending ? "Enviando..." : "Enviar comprovação"}
-          </button>
-          {msg && <p className={`text-sm ${msg.ok ? "text-emerald-700" : "text-rose-700"}`}>{msg.texto}</p>}
-        </form>
-      )}
-    </section>
+      {msg && <p className={`text-sm ${msg.ok ? "text-emerald-700" : "text-rose-700"}`}>{msg.texto}</p>}
+    </form>
   );
 }

@@ -1,45 +1,56 @@
 "use client";
-// Itens 1 e 2 — Trade altera status com comentário; travado em Cancelada/Reprovada
+// Alterar status com comentário — serve para a SIP (geral) e para cada PARCELA
 import { useState, useTransition } from "react";
-import { alterarStatusSip } from "@/app/actions/sip";
-import { SIP_STATUS, STATUS_LABEL, statusEditavel, normalizarStatus, type SipStatus } from "@/lib/sip/status";
+import { alterarStatusSip, alterarStatusParcela } from "@/app/actions/sip";
+import { STATUS_LABEL, normalizarStatus } from "@/lib/sip/status";
 
-export function AlterarStatusForm({ sipId, statusAtual: bruto }: { sipId: string; statusAtual: string }) {
+export function AlterarStatusForm({
+  alvo,
+  id,
+  sipId,
+  statusAtual: bruto,
+  opcoes,
+  bloqueio,
+}: {
+  alvo: "sip" | "parcela";
+  id: string;
+  sipId: string;
+  statusAtual: string;
+  opcoes: readonly string[];
+  bloqueio?: string | null; // texto do aviso 🔒 (quando não pode alterar)
+}) {
   const statusAtual = normalizarStatus(bruto);
-  const [status, setStatus] = useState<SipStatus>(statusAtual);
+  const [status, setStatus] = useState(statusAtual);
   const [comentario, setComentario] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; texto: string } | null>(null);
   const [pending, start] = useTransition();
 
-  if (!statusEditavel(statusAtual)) {
-    return (
-      <div className="rounded-xl border border-border bg-zinc-50 p-4 text-sm text-muted">
-        🔒 Esta SIP está <strong>{STATUS_LABEL[statusAtual]?.toLowerCase()}</strong> e não permite alteração de status.
-      </div>
-    );
+  if (bloqueio) {
+    return <div className="rounded-xl border border-border bg-background p-3 text-sm text-muted">🔒 {bloqueio}</div>;
   }
 
+  const definitivo = alvo === "sip" && ["cancelada", "reprovada"].includes(status);
+
   const salvar = () => {
-    if (!statusEditavel(status) && !confirm(`Marcar como "${STATUS_LABEL[status]}" é definitivo. Continuar?`)) return;
+    if (definitivo && !confirm(`Marcar a SIP como "${STATUS_LABEL[status]}" é definitivo. Continuar?`)) return;
     start(async () => {
-      const r = await alterarStatusSip(sipId, status, comentario);
+      const r =
+        alvo === "sip"
+          ? await alterarStatusSip(id, status, comentario)
+          : await alterarStatusParcela(id, status, comentario, sipId);
       setMsg(r.ok ? { ok: true, texto: "Status atualizado." } : { ok: false, texto: r.erro! });
       if (r.ok) setComentario("");
     });
   };
 
+  const campo = "mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand";
+
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+    <div className="space-y-3">
       <label className="block text-sm font-medium">
         Novo status
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as SipStatus)}
-          className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-        >
-          {SIP_STATUS.map((s) => (
-            <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-          ))}
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className={campo}>
+          {opcoes.map((s) => <option key={s} value={s}>{STATUS_LABEL[s] ?? s}</option>)}
         </select>
       </label>
 
@@ -48,9 +59,9 @@ export function AlterarStatusForm({ sipId, statusAtual: bruto }: { sipId: string
         <textarea
           value={comentario}
           onChange={(e) => setComentario(e.target.value)}
-          rows={3}
-          placeholder="Ex.: Falta a data visível nas fotos de merchandising."
-          className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          rows={alvo === "sip" ? 3 : 2}
+          placeholder={alvo === "sip" ? "Ex.: Aprovada conforme verba do trimestre." : "Ex.: Foto sem data visível, reenviar."}
+          className={campo}
         />
       </label>
 
